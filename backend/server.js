@@ -42,13 +42,17 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, () => {
-  console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  const server = app.listen(PORT, () => {
+    console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  });
 
-// Handle Unhandled Promise Rejections
-process.on('unhandledRejection', (err, promise) => {
-  console.log(`Unhandled Rejection - Error: ${err.message}`);
-  // Close server & exit process
-  server.close(() => process.exit(1));
-});
+  // Handle Unhandled Promise Rejections (only in local runtime daemon)
+  process.on('unhandledRejection', (err, promise) => {
+    console.log(`Unhandled Rejection - Error: ${err.message}`);
+    server.close(() => process.exit(1));
+  });
+}
+
+// Export for Serverless Functions (Vercel)
+module.exports = app;
